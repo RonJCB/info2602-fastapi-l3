@@ -36,7 +36,7 @@ def output_todo():
         todos = db.exec(select(Todo)).all()
         
         for todo in todos:
-            print(f"{todo.text}")
+            print(f"Text: {todo.text}, Status:{todo.done}, TodoId:{todo.id}, username: {todo.user.username}")
 @cli.command()
 #Delete a todo by ID.
 def delete_Todo(todo_id:int):
