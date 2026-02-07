@@ -31,22 +31,47 @@ def initialize():
 
 @cli.command()
 #Output each todo's ID, text, username and done status.
-def output_todo():
+def output_todo():#assuming no parameters and we want all the possible todos and not specifically a specific user
     with get_session() as db:
         todos = db.exec(select(Todo)).all()
-        
+        if not todos:
+            print("Todos not found in database")
+            return
         for todo in todos:
             print(f"Text: {todo.text}, Status:{todo.done}, TodoId:{todo.id}, username: {todo.user.username}")
 @cli.command()
 #Delete a todo by ID.
-def delete_Todo(todo_id:int):
+def delete_todo(todo_id:int):#delete a todo by ID assuming we dont haave the username
     with get_session() as db:
-        todo = db.exec(select(Todo).where(Todo.id == todo_id))
+        todo = db.exec(select(Todo).where(Todo.id == todo_id)).one_or_none()
+        if not todo:
+            print("Todo not found in database")
+            return
+        #if not todo.user.username == username:
+         #   print("Todo not found to that user")
+          #  return
+        db.delete(todo)
+        db.commit()
+        print("Todo deleted successfully")
 @cli.command()
 #Mark all of a user's todos as complete
-def todo_completed():
-    pass
+def todo_completed(user_id:int):
+    with get_session() as db:
+        user = db.exec(select(User).where(User.id== user_id)).one_or_none()
 
+        if not user:
+            print("user not found")
+            return
+        
+        todos = db.exec(select(Todo).where(Todo.user_id == user_id)).all()
+       # print(todos)
+        for todo in todos:
+            todo.done = True#can set todo.done to True or toggle todo
+            db.add(todo)#persis changes on database
+            db.commit()
+        
+        print("All todos set to completed")
+        
 @cli.command()
 def add_task(username:str, task:str):
     # Task 4.1 code here. Remove the line with "pass" below once completed
